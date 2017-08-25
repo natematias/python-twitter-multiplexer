@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# app-specific ignores
+config/*.json
+*.swp
+*.lock
+
 # C extensions
 *.so
 
