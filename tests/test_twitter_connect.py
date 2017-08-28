@@ -76,7 +76,6 @@ def test_exception_retry(mock_rate_limit, mock_twitter):
         "limit":15}}}
     t.rate_limit = mock_rate_limit
 
-    #import pdb;pdb.set_trace()
     assert conn.token['user_id'] == 2
     assert (reset_time - datetime.datetime.now()).total_seconds() > 0
     friends = conn.query(conn.api.GetFriends)

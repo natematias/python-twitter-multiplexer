@@ -24,14 +24,10 @@ def rate_limit_retry(func):
 
         #try a new key only if it's the second attempt or later
         if(self.try_counter >= 2):
-            #import pdb;pdb.set_trace()
-            self.log.info("Twitter: failed calling TwitterConnect.api.{0} due to rate limit on ID {1}.".format(set(args).pop().__name__, self.token['user_id']))
-            #self.log.info("Twitter: Rate limit reached under ID {0}".format(self.token['user_id']))
+            self.log.info("Twitter: rate limit calling TwitterConnect.api.{0} on ID {1}.".format(set(args).pop().__name__, self.token['user_id']))
             ## reset time to be the appropriate reset time
             ## by setting it to the earliest possible reset time
             ## TODO: Make this more efficient by observing the specific
-            ## method name -> URL combination
-            ## methodname = set(args).pop().__name__
             max_rate_limit = None
             max_rate_limit_keys = []
             for method, ratelist in self.api.rate_limit.resources.items():
@@ -44,20 +40,17 @@ def rate_limit_retry(func):
                         max_rate_limit = ratelimit['reset']
             self.token['next_available'] = datetime.datetime.fromtimestamp(max_rate_limit)
             self.token['available'] = False
-            self.log.info("Token for ID {0} next available at {1}. Selecting a new token...".format(self.token['user_id'], self.token['next_available']))
+            self.log.info("Twitter: Token for ID {0} next available at {1}. Selecting a new token...".format(self.token['user_id'], self.token['next_available']))
 
             token = self.select_available_token()
             if(self.apply_token(token)):
                 self.log.info("Twitter API connection verified under ID {0}".format(self.token['user_id']))
 
-        #self.log.info("Twitter API connection verified under ID {0}".format(self.token['user_id']))
-        # print( "    Wrapper: Attempting try {0}".format(self.b_try_counter))
         result = func(self,*args, **kwargs)
         ## if the above line fails, the counter will iterate
         ## without being reset, since the line below would never run
         ## if the above line succeeds, reset the counter and continue
         self.try_counter = 0
-        #print("After (Class {0}, Method {1})".format(self.__class__.__name__,  sys._getframe().f_code.co_name))
         return result
     return func_wrapper
 
