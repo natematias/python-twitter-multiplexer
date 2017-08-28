@@ -13,7 +13,7 @@ ENV =  os.environ['CS_ENV']
 RETRY_LIMIT = 10
 
 def retry_if_api_limit_error(exception):
-    return isinstance(exception, twitter.error.TwitterError)
+    return isinstance(exception, twitter.error.TwitterError) and len(exception.args)>0 and len(exception.args[0])>0 and "code" in exception.args[0][0] and exception.args[0][0]['code'] == 88
 
 def rate_limit_retry(func):
     @retry(stop_max_attempt_number=RETRY_LIMIT, retry_on_exception=retry_if_api_limit_error)

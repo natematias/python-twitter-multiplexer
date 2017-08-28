@@ -60,7 +60,7 @@ def test_exception_retry(mock_rate_limit, mock_twitter):
             account_obj = json2obj(json_dump)
             friend_accounts.append(account_obj)
 
-    t.GetFriends.side_effect = [twitter.error.TwitterError(Mock(message=[{'code': 88, 'message': 'Rate limit exceeded'}])), friend_accounts]
+    t.GetFriends.side_effect = [twitter.error.TwitterError([{'code': 88, 'message': 'Rate limit exceeded'}]), friend_accounts]
 
     assert conn.token['user_id'] == 1
     friends = conn.query(conn.api.GetFriends)
@@ -68,7 +68,7 @@ def test_exception_retry(mock_rate_limit, mock_twitter):
     assert conn.token['user_id'] == 2
 
     ##now make it wait to go back to the previous key
-    t.GetFriends.side_effect = [twitter.error.TwitterError(Mock(message=[{'code': 88, 'message': 'Rate limit exceeded'}])), friend_accounts]
+    t.GetFriends.side_effect = [twitter.error.TwitterError([{'code': 88, 'message': 'Rate limit exceeded'}]), friend_accounts]
 
     mock_rate_limit.resources = {"getfriends":{"/friends/list":{
         "reset":time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=1)).timetuple()),
