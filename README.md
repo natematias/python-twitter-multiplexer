@@ -1,4 +1,4 @@
-# python-twitter-multiplexer
+# Python Twitter Multiplexer
 This project offers stub code for wrapping python-twitter to use tokens from multiple users when querying the Twitter API. This is a common pattern for many apps that use the Twitter API, and it's a basic part of the functionality for the code behind [CivilServant](https://civilservant.io), which uses API access to support citizen testing of ideas for improving social experiences online.
 
 This project is in alpha stage and will probably not receive close attention or maintenance. However, I hope it will be useful to others who need to use this design pattern in your own projets.
