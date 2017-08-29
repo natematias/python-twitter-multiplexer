@@ -44,6 +44,7 @@ def rate_limit_retry(func):
 
             token = self.select_available_token()
             if(self.apply_token(token)):
+                self.api.InitializeRateLimit()
                 self.log.info("Twitter API connection verified under ID {0}".format(self.token['user_id']))
 
         result = func(self,*args, **kwargs)
