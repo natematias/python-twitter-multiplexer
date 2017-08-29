@@ -44,7 +44,6 @@ def rate_limit_retry(func):
 
             token = self.select_available_token()
             if(self.apply_token(token)):
-                self.api.InitializeRateLimit()
                 self.log.info("Twitter API connection verified under ID {0}".format(self.token['user_id']))
 
         result = func(self,*args, **kwargs)
@@ -108,6 +107,10 @@ class TwitterConnect():
                                access_token_secret = token['oauth_token_secret'])
         try:
             verification = self.api.VerifyCredentials()
+            ## in the tests, mock this
+            ## and also update self.api.rate_limit.resources
+            ## (which probably already happens in the tests)
+            self.api.InitializeRateLimit()
         except twitter.error.TwitterError as e:
             self.log.error("Twitter: Failed to connect to API with User ID {0}. Remove from token set. Error: {1}.".format(token['user_id'], str(e)))
             token['valid'] = False
