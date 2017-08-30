@@ -13,12 +13,12 @@ ENV =  os.environ['CS_ENV']
 RETRY_LIMIT = 10
 
 def retry_if_api_limit_error(exception):
+    print(exception.args)
     return isinstance(exception, twitter.error.TwitterError) and len(exception.args)>0 and len(exception.args[0])>0 and "code" in exception.args[0][0] and exception.args[0][0]['code'] == 88
 
 def rate_limit_retry(func):
     @retry(stop_max_attempt_number=RETRY_LIMIT, retry_on_exception=retry_if_api_limit_error)
     def func_wrapper(self,*args, **kwargs):
-        #print("Before (Class {0}, Method {1})".format(self.__class__.__name__,  sys._getframe().f_code.co_name))
         self.try_counter += 1
         result = None
 
@@ -27,14 +27,14 @@ def rate_limit_retry(func):
             self.log.info("Twitter: rate limit calling TwitterConnect.api.{0} on ID {1}.".format(set(args).pop().__name__, self.token['user_id']))
             ## reset time to be the appropriate reset time
             ## by setting it to the earliest possible reset time
-            ## TODO: Make this more efficient by observing the specific
+            ## Future TODO: Make this more efficient by observing the specific
+            ## call and using that call's rate limit
             max_rate_limit = None
             max_rate_limit_keys = []
             for method, ratelist in self.api.rate_limit.resources.items():
                 for rl in list(ratelist.items()):
                     url = rl[0]
                     ratelimit = rl[1]
-                    ##  TODO: THIS SHOULD BE THE LATEST RATE LIMIT FOR THIS KEY
                     if('reset' in ratelimit.keys() and (max_rate_limit is None or ratelimit['reset'] > max_rate_limit)):
                         max_rate_limit_keys = [method, url]
                         max_rate_limit = ratelimit['reset']
@@ -42,12 +42,20 @@ def rate_limit_retry(func):
             self.token['available'] = False
             self.log.info("Twitter: Token for ID {0} next available at {1}. Selecting a new token...".format(self.token['user_id'], self.token['next_available']))
 
+            ## TODO FOR DEBUGGING
+            # import pdb;pdb.set_trace()
+            # for example, you could check the rate_limit status:
+            # self.api.rate_limit.resources['friends']['/friends/list']
             token = self.select_available_token()
             if(self.apply_token(token)):
                 self.log.info("Twitter API connection verified under ID {0}".format(self.token['user_id']))
+            ## TODO FOR DEBUGGING
+            # import pdb;pdb.set_trace()
+            # now look again at the rate limit
+            # self.api.rate_limit.resources['friends']['/friends/list']
 
         result = func(self,*args, **kwargs)
-        ## if the above line fails, the counter will iterate
+        ## if the above line throws an exception, the counter will iterate
         ## without being reset, since the line below would never run
         ## if the above line succeeds, reset the counter and continue
         self.try_counter = 0
@@ -99,7 +107,8 @@ class TwitterConnect():
         if(self.apply_token(token)):
             self.log.info("Twitter API connection verified under ID {0}".format(self.token['user_id']))
 
-    ## This method takes a token and tries to adjust the API to query using the token
+    ## This method takes a token and reconnects to the API using that token
+    ## It also sets the rate limit for that token up front
     def apply_token(self, token):
         self.api = twitter.Api(consumer_key = self.consumer_key,
                                consumer_secret = self.consumer_secret,
