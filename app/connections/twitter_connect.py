@@ -10,7 +10,7 @@ ENV =  os.environ['CS_ENV']
 ## HOW MANY TIMES TO RETRY?
 ## IN THEORY, SHOULDN'T NEED
 ## TO RETRY MORE THAN ONCE
-RETRY_LIMIT = 10
+RETRY_LIMIT = 3
 
 def retry_if_api_limit_error(exception):
     print(exception.args)
@@ -43,16 +43,14 @@ def rate_limit_retry(func):
             self.log.info("Twitter: Token for ID {0} next available at {1}. Selecting a new token...".format(self.token['user_id'], self.token['next_available']))
 
             ## TODO FOR DEBUGGING
-            # import pdb;pdb.set_trace()
-            # for example, you could check the rate_limit status:
-            # self.api.rate_limit.resources['friends']['/friends/list']
+            # UNCOMMENT THIS LINE FOR TESTING/DEBUGGING USING test.py 
+            # self.log.info("Twitter: Before selecting a new token, here's the rate limit for GetFriends: {0}".format(self.api.rate_limit.resources['friends']['/friends/list']))
             token = self.select_available_token()
             if(self.apply_token(token)):
                 self.log.info("Twitter API connection verified under ID {0}".format(self.token['user_id']))
             ## TODO FOR DEBUGGING
-            # import pdb;pdb.set_trace()
-            # now look again at the rate limit
-            # self.api.rate_limit.resources['friends']['/friends/list']
+            # UNCOMMENT THIS LINE FOR TESTING/DEBUGGING USING test.py 
+            # self.log.info("Twitter: After selecting a new token, here's the rate limit for GetFriends: {0}".format(self.api.rate_limit.resources['friends']['/friends/list']))
 
         result = func(self,*args, **kwargs)
         ## if the above line throws an exception, the counter will iterate
