@@ -65,6 +65,8 @@ class TwitterConnect():
     def __init__(self, log=None):
         BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), "../..")
         self.try_counter = 0
+        self.token = None
+        self.api = None
 
         ## LOAD LOGGER
         if(log):
@@ -108,10 +110,17 @@ class TwitterConnect():
     ## This method takes a token and reconnects to the API using that token
     ## It also sets the rate limit for that token up front
     def apply_token(self, token):
-        self.api = twitter.Api(consumer_key = self.consumer_key,
-                               consumer_secret = self.consumer_secret,
-                               access_token_key = token['oauth_token'],
-                               access_token_secret = token['oauth_token_secret'])
+        if(self.api is None):
+            self.api = twitter.Api(consumer_key = self.consumer_key,
+                                   consumer_secret = self.consumer_secret,
+                                   access_token_key = token['oauth_token'],
+                                   access_token_secret = token['oauth_token_secret'])
+        else:
+            self.api.ClearCredentials()
+            self.api.SetCredentials(consumer_key = self.consumer_key,
+                                   consumer_secret = self.consumer_secret,
+                                   access_token_key = token['oauth_token'],
+                                   access_token_secret = token['oauth_token_secret'])
         try:
             verification = self.api.VerifyCredentials()
             ## in the tests, mock this

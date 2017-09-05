@@ -1,4 +1,7 @@
 from app.connections.twitter_connect import *
+import http.client as http_client
+#http_client.HTTPConnection.debuglevel = 1
+
 connection = TwitterConnect()
 print("Twitter API details:")
 print(connection.api.__dict__)
