@@ -1,6 +1,6 @@
 pytest
 python-twitter
 logging
-cloghandler
+ConcurrentLogHandler
 retrying
 mock
